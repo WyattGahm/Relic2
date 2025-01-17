@@ -41,7 +41,7 @@ void printx(const char *format, ...) {
     va_end(args);
 }
 
-%init{
+__attribute__((constructor)) static void prepare(){
     //init: LOGGING
     init_log("exp_relic_log.txt");
     printx("###################### LOGGING STARTING ######################\n");
