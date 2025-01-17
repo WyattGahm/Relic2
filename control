@@ -1,0 +1,9 @@
+Package: dev.no5up.relic2demo
+Name: Relic2Demo
+Version: 0.1.0
+Depends: mobilesubstrate
+Architecture: iphoneos-arm64
+Description: Property of Wyatt Gahm. Do not distribute. Alters Snapchat version text
+Maintainer: nobody
+Author: no5up
+Section: Tweaks
