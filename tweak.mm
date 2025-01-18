@@ -197,13 +197,14 @@ int patchMessageApparatus(void *source, void *target){
 
 
 
-__attribute__((constructor)) static void prepare(){
+__attribute__((constructor)) void prepare(){
     if(selectiveInjection("Sonic Tools") == 0) return;
 
     AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
-
+	
     void *victim = dlsym(RTLD_DEFAULT, "objc_msgSend");
-
+    printx("Got victim %8x!\n", victim);
+    sleep(3);
     patchMessageApparatus(victim, (void*)&patched_handler);
 
 }
