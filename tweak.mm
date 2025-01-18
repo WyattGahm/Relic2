@@ -171,20 +171,20 @@ int patchMessageApparatus(void *source, void *target){
 
     size_t patch_size = 6 * 4;
 
-    kern_return_t kr_unlock = syscall_vm_protect(mach_task_self(), (vm_address_t)victim_pointer, patch_size, false, VM_PROT_READ | VM_PROT_WRITE | VM_PROT_COPY);
+    kern_return_t kr_unlock = syscall_vm_protect(mach_task_self(), (vm_address_t)victim, patch_size, false, VM_PROT_READ | VM_PROT_WRITE | VM_PROT_COPY);
     if(kr_unlock != KERN_SUCCESS) return kr_unlock;
     
     uint8_t sacrificial_reg = 14; //inst_decode_add_dest(victim_pointer[1]); 
 
-    victim_pointer[0] = inst_generate_movz(sacrificial_reg, (handler >> 32) & 0xFFFF, 32);
-    victim_pointer[1] = inst_generate_movk(sacrificial_reg, (handler >> 16) & 0xFFFF, 16);
-    victim_pointer[2] = inst_generate_movk(sacrificial_reg, (handler >> 0) & 0xFFFF, 0);
-    victim_pointer[3] = inst_generate_br(sacrificial_reg);
+    victim[0] = inst_generate_movz(sacrificial_reg, (handler >> 32) & 0xFFFF, 32);
+    victim[1] = inst_generate_movk(sacrificial_reg, (handler >> 16) & 0xFFFF, 16);
+    victim[2] = inst_generate_movk(sacrificial_reg, (handler >> 0) & 0xFFFF, 0);
+    victim[3] = inst_generate_br(sacrificial_reg);
     //no patch on victim_pointer[4];
-    //victim_pointer[5] = 0xDAC147F0; //PAC clear
+    //victim[5] = 0xDAC147F0; //PAC clear
 
-    kern_return_t kr_relock = syscall_vm_protect(mach_task_self(), (vm_address_t)victim_pointer, patch_size, false, VM_PROT_READ | VM_PROT_EXECUTE);
-    if(kr_unlcok != KERN_SUCCESS) return kr_relock;
+    kern_return_t kr_relock = syscall_vm_protect(mach_task_self(), (vm_address_t)victim, patch_size, false, VM_PROT_READ | VM_PROT_EXECUTE);
+    if(kr_relock != KERN_SUCCESS) return kr_relock;
 
 
     //idea: prep pointers, unlock memory, perform a copy, relock pointers, invalidate cache
