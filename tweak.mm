@@ -203,10 +203,9 @@ __attribute__((constructor)) void prepare(){
     AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
 	
     void *victim = dlsym(RTLD_DEFAULT, "objc_msgSend");
-    printx("Got victim %8x!\n", victim);
-    sleep(3);
-    patchMessageApparatus(victim, (void*)&patched_handler);
 
+    sleep(3);
+    //patchMessageApparatus(victim, (void*)&patched_handler);
 }
 
 void old_tests(){
