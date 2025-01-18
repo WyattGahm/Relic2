@@ -1,6 +1,6 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-@import ObjectiveC.message;
+
 #include <mach-o/dyld.h>
 #include <stdio.h>
 #include <mach-o/dyld.h>
@@ -9,11 +9,16 @@
 #include <fcntl.h>
 #include <unistd.h>
 #import <AudioToolbox/AudioToolbox.h>
+
 #include <sys/mman.h>
+
 #include <mach/vm_prot.h>
 #include <mach/vm_types.h>
 #include <mach/mach.h>
 #include <stdint.h>
+#include <ptrauth.h>
+
+#include <mach/arm/kern_return.h>
 
 static FILE *log_file = NULL;
 
@@ -48,7 +53,7 @@ void printx(const char *format, ...) {
 }
 
 
-
+/*
 void doNothing(id self, SEL _cmd){
     printx("DOING NOTHING\n");
 }
@@ -80,8 +85,8 @@ struct OrigAndReturn hookmanager(id self, SEL _cmd, uint64_t arg2, uint64_t arg3
     return (struct OrigAndReturn) {(uintptr_t)objc_msgSend, 0};
 }
 
+*/
 
-#include <ptrauth.h>
 
 //https://github.com/opensource-apple/objc4/blob/cd5e62a5597ea7a31dccef089317abb3a661c154/runtime/Messengers.subproj/objc-msg-arm.s#L110
 
