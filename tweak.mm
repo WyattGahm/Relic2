@@ -144,7 +144,7 @@ __attribute__((__naked__)) static void patched_handler(){
 
 
 //patches the messaging apparatus to manipulate calls
-int patchMessageApparatus(void *victim, void *handler){
+int patchMessageApparatus(void *source, void *target){
     /* DONT MODIFY THIS SHIT 
     
     Original function:
@@ -166,13 +166,13 @@ int patchMessageApparatus(void *victim, void *handler){
     
     */
 
-    uint32_t *victim_pointer = (uint32_t*)ptrauth_strip(victim, ptrauth_key_process_independent_code);
-    //uint64_t handler_address = (uint64_t*)ptrauth_strip(handler, ptrauth_key_process_independent_code);
+    uint32_t *victim = (uint32_t*)ptrauth_strip(source, ptrauth_key_process_independent_code);
+    uint64_t handler = (uint64_t)ptrauth_strip(target, ptrauth_key_process_independent_code);
 
     size_t patch_size = 6 * 4;
 
     kern_return_t kr_unlock = syscall_vm_protect(mach_task_self(), (vm_address_t)victim_pointer, patch_size, false, VM_PROT_READ | VM_PROT_WRITE | VM_PROT_COPY);
-    if(kr_unlcok != KERN_SUCCESS) return kr_unlock;
+    if(kr_unlock != KERN_SUCCESS) return kr_unlock;
     
     uint8_t sacrificial_reg = 14; //inst_decode_add_dest(victim_pointer[1]); 
 
