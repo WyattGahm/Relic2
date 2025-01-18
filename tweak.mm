@@ -133,12 +133,11 @@ uint32_t inst_decode_b_le(uint32_t inst){
 }
 
 
-__attribute__((__naked__)) static void patched_handler(){
-  __asm("nop"); //loads orig addr into x16
-  __asm("nop"); //loads orig addr into x16
-  __asm("nop"); //loads orig addr into x16
-
-  __asm("ret");
+__attribute__((noinline, naked)) volatile void patched_handler(){
+  __asm__ volatile ("nop"); //loads orig addr into x16
+  __asm__ volatile("nop"); //loads orig addr into x16
+  __asm__ volatile ("nop"); //loads orig addr into x16
+  __asm__ volatile ("ret");
 }
 
 
