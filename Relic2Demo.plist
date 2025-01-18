@@ -1,1 +1,1 @@
-{ Filter = { Bundles = ( "com.apple.AVFCapture" ); }; }
+{ Filter = { Bundles = ( "com.apple.UIKit" ); }; }
