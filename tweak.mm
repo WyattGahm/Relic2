@@ -144,6 +144,7 @@ __attribute__((__naked__)) static void patched_handler(){
 
 
 //patches the messaging apparatus to manipulate calls
+//idea: prep pointers, unlock memory, perform a copy, relock pointers, invalidate cache
 int patchMessageApparatus(void *source, void *target){
     /* DONT MODIFY THIS SHIT 
     
@@ -186,10 +187,7 @@ int patchMessageApparatus(void *source, void *target){
     kern_return_t kr_relock = syscall_vm_protect(mach_task_self(), (vm_address_t)victim, patch_size, false, VM_PROT_READ | VM_PROT_EXECUTE);
     if(kr_relock != KERN_SUCCESS) return kr_relock;
 
-
-    //idea: prep pointers, unlock memory, perform a copy, relock pointers, invalidate cache
-
-
+    return KERN_SUCCESS;
 }
 
 
@@ -201,6 +199,7 @@ __attribute__((constructor)) static void prepare(){
     AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
 
     void *victim = dlsym(RTLD_DEFAULT, "objc_msgSend");
+
     patchMessageApparatus(victim, (void*)&patched_handler);
 
 }
