@@ -132,19 +132,37 @@ uint32_t inst_generate_br(uint8_t reg){
 	uint32_t rn = ((uint32_t)reg & 0x1F) << 5;
 	return fmt | rn;
 }
-//decodes 
-uint32_t inst_decode_b_le(uint32_t inst){
-    return 0;
+//decodes b.cond
+int32_t inst_extract_b_cond_imm(uint32_t inst){
+    return (inst >>5) & 0x7FFFF;
 }
+
+int inst_decode_is_b_le(uint32_t inst){
+    uint32_t fmt = 0b01010100000000000000000000000000;
+    uint8_t cond = inst & 0x0F;
+    return (cond == 0b1011 && fmt & inst == fmt) ? 1 : 0;
+}
+
 
 
 __attribute__((noinline, naked)) volatile void patched_handler(){
-  __asm__ volatile ("nop"); //loads orig addr into x16
-  __asm__ volatile("nop"); //loads orig addr into x16
-  __asm__ volatile ("nop"); //loads orig addr into x16
-  __asm__ volatile ("ret");
-}
+    /* DONT MODIFY THIS SHIT
 
+    Scratchable registers: the one the ldr and and instructions dont set, anything above x7
+    - load address for ble return and regular return into 
+
+
+    */
+    __asm__ volatile ("nop"); //loads orig addr into x16
+    __asm__ volatile ("nop"); //loads orig addr into x16
+    __asm__ volatile ("nop"); //loads orig addr into x16
+    
+    __asm__ volatile ("cmp x0, #0");
+    __asm__ volatile ("b.ge #8");
+    __asm__ volatile ("b overwritten_stff");
+    __asm__ volatile ("add x16, x16, x?"); //add the original offset for the jump
+    __asm__ volatile ("");
+}
 
 
 //patches the messaging apparatus to manipulate calls
@@ -154,6 +172,7 @@ int patchMessageApparatus(void *source, void *target){
     
     Original function:
     ==================
+    ENTRY:
     cmp x0, #0
     b.le #0xd0
     ldr x14, [x0]
@@ -163,16 +182,38 @@ int patchMessageApparatus(void *source, void *target){
 
     Replaced code:
     ==================
+    ENTRY:
     movz x14, #0x1234, lsl #32
     movk x14, #0x5678, lsl #16
     movk x14, #0x9abc, lsl #0
     br x14
+    ==================
+
+    Code to return to default flow::
+    ==================
+    movz x14, #0x1234, lsl #32 //address of LNilOrTagged
+    movk x14, #0x5678, lsl #16
+    movk x14, #0x9abc, lsl #0
+
+    movz x15, #0x1234, lsl #32 //address of LgetIsaDone
+    movk x15, #0x5678, lsl #16
+    movk x15, #0x9abc, lsl #0
+
+    cmp x0, #0
+    b.gt 8
+    br x14 //LNilOrTagged
+    ldr x14, [x0]           //original, pure
+    and x16, x14, ISA_MASK  //original, pure
+    br x15
     ==================
     
     */
 
     uint32_t *victim = (uint32_t*)ptrauth_strip(source, ptrauth_key_process_independent_code);
     uint64_t handler = (uint64_t)ptrauth_strip(target, ptrauth_key_process_independent_code);
+
+
+    //APPLY PATCH FOR VICTIM FUNCTION
 
     size_t patch_size = 6 * 4;
 
@@ -191,9 +232,33 @@ int patchMessageApparatus(void *source, void *target){
     kern_return_t kr_relock = syscall_vm_protect(mach_task_self(), (vm_address_t)victim, patch_size, false, VM_PROT_READ | VM_PROT_EXECUTE);
     if(kr_relock != KERN_SUCCESS) return kr_relock;
 
+
+
+
+
+
     return KERN_SUCCESS;
+
 }
 
+
+void dump_data(void *target){
+    int pointer_table_size = 16;
+    int function_body_size = 400;
+    uint64_t *tagged_pointer_table = (uint64_t*)((uintptr_t)target - pointer_table_size*8);
+    uint32_t *function_body = (uint32_t*)target;
+
+    for(int i = 0; i < pointer_table_size; i++){
+        printx("tagged_pointer_table[%02d] = %8x\n", i, tagged_pointer_table[i]);
+    }
+
+    printx("START function body:\n")
+
+    for(int i = 0; i < function_body_size; i++){
+        printx("%04x\n", function_body[i]);
+    }
+    
+}
 
 
 
@@ -207,6 +272,8 @@ __attribute__((constructor)) void prepare(){
     sleep(3);
     //patchMessageApparatus(victim, (void*)&patched_handler);
 }
+
+
 
 void old_tests(){
     //test: base image offset
