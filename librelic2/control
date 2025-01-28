@@ -1,9 +1,0 @@
-Package: dev.no5up.librelic2
-Name: librelic2
-Depends: mobilesubstrate
-Version: 2.5.0
-Architecture: iphoneos-arm
-Description: updated library for discrete hooking
-Maintainer: nobody
-Author: no5up
-Section: Development
