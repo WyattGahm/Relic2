@@ -64,17 +64,6 @@ uint32_t inst_generate_br(uint8_t reg){
 	uint32_t rn = ((uint32_t)reg & 0x1F) << 5;
 	return fmt | rn;
 }
-//decodes b.cond
-int32_t inst_extract_b_cond_imm(uint32_t inst){
-    return (inst >>5) & 0x7FFFF;
-}
-
-int inst_decode_is_b_le(uint32_t inst){
-    uint32_t fmt = 0b01010100000000000000000000000000;
-    uint8_t cond = inst & 0x0F;
-    return (cond == 0b1011 && fmt & inst == fmt) ? 1 : 0;
-}
-
 
 
 __attribute__((noinline, naked)) volatile void patched_handler(){
